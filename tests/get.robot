@@ -16,6 +16,11 @@ Should Return A Partner List
     ${response}         GET Partners
     Status Should Be    200
 
+    # Sempre adicionar na variavel '${response}', o método '.json()', pois os métodos
+    # 'GET/POST/PUT/DELETE' sempre devolvem as respostas no formato string.
+    # E precisamos adicionar o método '.json()' para a automação converter e conseguimos
+    # efetuar as validações.
+
     # A Keyword 'Get Length' verifica a qtde. de objetos cadastrados no response
     ${size}    Get Length    ${response.json()}
 

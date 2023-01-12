@@ -7,6 +7,7 @@ Library      JSONLibrary
 Resource    services.robot
 Resource    database.robot
 Resource    helpers.robot
+Resource    rabbitmq_services.robot
 
 
 *** Keywords ***

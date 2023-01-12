@@ -8,7 +8,11 @@ Resource    ../resources/base.robot
 
 *** Test Cases ***
 Should Create A New Partner
+    [Tags]    wip
     
+    # Keyword apaga as msgs presentes no rabbitmq para executar os testes limpos
+    Purge Messages
+
     # Criação de massa de testes buscando através do arquivo 'resources/fixtures/patner.json'
     #${partner_data}    Get Fixture    partner
 
@@ -37,6 +41,11 @@ Should Create A New Partner
     # Esta keyword compara o resultado do request 'POST Partner' ( ${response.json()}[partner_id] )
     # e compara com os dados consultados pela keyword 'Find Partner By Name' ( ${result}[_id] )
     
+    # Sempre adicionar na variavel '${response}', o método '.json()', pois os métodos
+    # 'GET/POST/PUT/DELETE' sempre devolvem as respostas no formato string.
+    # E precisamos adicionar o método '.json()' para a automação converter e conseguimos
+    # efetuar as validações.
+
     #Validação          Resultado obtido da requisição | Resultado esperado
     Should Be Equal    ${response.json()}[partner_id]    ${result}[_id]
 
@@ -48,6 +57,23 @@ Should Create A New Partner
     # Como é consultada uma lista de dados no banco de dados do MongoDB, foi adicionado a posição [0] do indice
     # Log To Console    ${results}[0]       #sera apresentado essa informacao no prompt '{'_id': '63b9caef2eb266f9f36d5e5c', 'name': 'Pizzas Papito5', 'email': 'contato5@papito.com.br', 'whatsapp': '11999999999', 'business': 'Restaurante', 'active': False, 'created_at': datetime.datetime(2023, 1, 7, 12, 44, 30, 111000), 'updated_at': datetime.datetime(2023, 1, 7, 12, 44, 30, 111000)}'
     # Log To Console    ${results}[0][_id]  #sera apresentado essa informacao no prompt '63b9caef2eb266f9f36d5e5c'
+
+    # Consulta o ultimo e-mail recebido no rabbitmq, o processo é efetuado via requisição API
+    # na rota capturada dentro do rabbitmq, botão 'Get Message(s)' para consultar os e-mail recebidos
+    ${message}    Get Message
+
+    # Esse log é utilizadp para apresentar no prompt se está retornando as informações
+    # esperadas do response
+    #Log To Console    ${message}[payload]
+
+    # Esse Log é utilizado para apresentar apenas no report se está retornando as 
+    # informações esperadas do response
+    Log    ${message}[payload]
+
+    # Validação do ultimo email capturado no rabbitmq,
+    # com o e-mail capturado na massa de requisição
+    # Validação   Resultado obtido do rabbitmq    | Resultado esperado
+    Should Contain    ${message}[payload]            ${partner_data}[email]
 
 Should Return Duplicate Company Name
     [Tags]    bugs        # Tag incluída para validar apenas esse CT
@@ -71,6 +97,11 @@ Should Return Duplicate Company Name
     # Segunda requisição com os mesmos dados, para validar o resp code 409
     ${response}               POST Partner    ${partner_data}
     Status Should Be         409
+
+    # Sempre adicionar na variavel '${response}', o método '.json()', pois os métodos
+    # 'GET/POST/PUT/DELETE' sempre devolvem as respostas no formato string.
+    # E precisamos adicionar o método '.json()' para a automação converter e conseguimos
+    # efetuar as validações.
 
     #Validação               Resultado obtido da requisição | Resultado esperado
     Should Be Equal          ${response.json()}[message]      Duplicate company name
